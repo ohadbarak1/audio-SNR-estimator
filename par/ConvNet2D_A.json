@@ -1,0 +1,44 @@
+{
+	"input": {
+		"verbose": 2,
+		"loss": "mean_absolute_error",
+		"horovod": 4,
+		"learning_rate": 0.0001,
+		"epochs": 10,
+		"batch_size": 512,
+		"adam_beta1": 0.9,
+		"adam_beta2": 0.999,
+		"adam_weight_decay": 1e-2,
+		"metrics": "mean_squared_error",
+		"nn_hyperparams": {
+		"input_shape": [40,90,1],
+		"layers": [
+			{ "layer_type": "Conv", "name": "Conv_1", "filters": 64, "kernel_size": [5, 5], "strides": [2, 1], "padding": "valid", "dilation_rate": [1, 1],
+				"activation": "relu6" },
+			{ "layer_type": "MaxPool", "padding": "valid", "strides": [2, 1], "pool_size": [2, 2] },
+			{ "layer_type": "Dropout", "drop": 0.25 },
+			{ "layer_type": "Conv", "name": "Conv_2", "filters": 96, "kernel_size": [3, 3], "strides": [1, 1], "padding": "valid", "dilation_rate": [1, 1],
+				"activation": "relu6" },
+			{ "layer_type": "MaxPool", "padding": "valid", "strides": [1, 1], "pool_size": [2, 2] },
+			{ "layer_type": "Dropout", "drop": 0.25 },
+			{ "layer_type": "Conv", "name": "Conv_3", "filters": 128, "kernel_size": [3, 3], "strides": [1, 1], "padding": "valid", "dilation_rate": [1, 1],
+				"activation": "relu6" },
+			{ "layer_type": "MaxPool", "padding": "valid", "strides": [1, 2], "pool_size": [2, 2] },
+			{ "layer_type": "Dropout", "drop": 0.25 },
+			{ "layer_type": "Conv", "name": "Conv_4", "filters": 144, "kernel_size": [3, 3], "strides": [1, 2], "padding": "valid", "dilation_rate": [1, 1],
+				"activation": "relu6" },
+			{ "layer_type": "MaxPool", "padding": "valid", "strides": [1, 2], "pool_size": [1, 2] },
+			{ "layer_type": "Dropout", "drop": 0.25 },
+			{ "layer_type": "Flatten", "name": "Flatten_5" },
+			{ "layer_type": "Dense", "name": "Dense_6", "units": 128, "regularizer": "l2", "lambda": 0.0001,
+				"activation": "relu6" },
+			{ "layer_type": "Dropout", "drop": 0.2 },
+			{ "layer_type": "Dense", "name": "Dense_7", "units": 256,
+				"activation": "relu6" },
+			{ "layer_type": "Dropout", "drop": 0.2 },
+			{ "layer_type": "Dense", "name": "Dense_8", "units": 1,
+				"activation": "sigmoid" }
+		]
+		}
+	}
+}
