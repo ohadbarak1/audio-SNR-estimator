@@ -24,9 +24,9 @@ if __name__ == '__main__':
     print (metrics_out.history.keys())
 
     loss_hist		= np.array(metrics_out.history['loss'], dtype=np.float32)
-    mse_hist		= np.array(metrics_out.history['mean_squared_error'], dtype=np.float32)
+    mse_hist		= np.array(metrics_out.history['mean_absolute_error'], dtype=np.float32)
     val_loss_hist	= np.array(metrics_out.history['val_loss'], dtype=np.float32)
-    val_mse_hist	= np.array(metrics_out.history['val_mean_squared_error'], dtype=np.float32)
+    val_mse_hist	= np.array(metrics_out.history['val_mean_absolute_error'], dtype=np.float32)
 
     print (f"mse_hist: {mse_hist}")
     print (f"val_mse_hist: {val_mse_hist}")

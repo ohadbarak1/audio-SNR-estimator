@@ -12,7 +12,165 @@ import json
 
 
 
+class SNREstimator ():
+	def __init__(self, json_path):
+		with open(json_path, "r") as f:
+			self.network_params = json.load(f)
+			self.input_shape = None
+
+	def train_model (self, checkpoint_path, train_data, train_labels, valid_data=None, valid_labels=None):
+		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1)
+		self.input_shape=[train_data.shape[1], train_data.shape[2], 1]
+
+		# load model if the file already exists.
+		# otherwise, build a new model based on the provided function name
+		if (os.path.exists(checkpoint_path)):
+			print (f"loading existing model from path: {checkpoint_path}")
+			model = load_model(checkpoint_path)
+		else:
+			print (f"building new model")
+			model = self.build_model ()
+
+		valid_tuple = None
+		#provide validation data and labels as a tuple
+		if (valid_data is not None and valid_labels is not None):
+			if valid_data.shape[1] != train_data.shape[1] or valid_data.shape[2] != train_data.shape[2]:
+				raise Exception('dimension mismatch between training and validation data')
+			
+			valid_data = valid_data.reshape (valid_data.shape[0], valid_data.shape[1], valid_data.shape[2], 1),
+			valid_tuple = (valid_data, valid_labels)
+
+			checkpoint_monitor='val_loss'
+		else:
+			checkpoint_monitor='loss'
+
+		# add checkpoints for trained model.
+		# Save only the "best" model according to the value of validation data loss, 
+		# or traiing data loss if validation data are not supplied
+		my_callbacks = [
+			#ModelCheckpoint(filepath='%s.epoch={epoch:03d}.val_loss={val_loss:2.4f}.h5'%(checkpoint_path.split('.')[0]),
+			ModelCheckpoint(filepath=checkpoint_path,
+							monitor=checkpoint_monitor,
+							save_best_only=True,
+							verbose=self.network_params["input"]["verbose"])
+		]
+		# Train the model
+		history_callback = model.fit(train_data, train_labels,
+							   epochs=self.network_params["input"]["epochs"],
+							   batch_size=self.network_params["input"]["batch_size"],
+							   validation_data=valid_tuple,
+							   shuffle=True,
+							   callbacks=my_callbacks,
+							   verbose=self.network_params["input"]["verbose"])
+
+		# save model to file
+		model.save (checkpoint_path)
+		return history_callback
+
+	def infer(self, checkpoint_path, test_data):
+		# read hyperparameters from par file
+		batch_size	= self.network_params["input"]["batch_size"]
+		verbose		= self.network_params["input"]["verbose"]
+
+		if test_data.shape[1] != self.input_shape[0] or test_data.shape[2] != self.input_shape[1]:
+			raise Exception('dimension mismatch between test and training data')
+		test_data = test_data.reshape (test_data.shape[0], test_data.shape[1], test_data.shape[2], 1)
+		
+		# load model from file
+		model = load_model (checkpoint_path)
+		# run inference on test data using the loaded model
+		pred = model.predict (test_data, batch_size=batch_size, verbose=verbose)
+		return pred
+	
+	def build_model (self):
+		model = Sequential()
+
+		# Input Shape: If data_format="channels_first": A 4D tensor with shape: (batch_size, channels, height, width)
+
+		for i, layer in enumerate (self.network_params["input"]["nn_hyperparams"]["layers"]):
+			if i == 0:
+				if layer["layer_type"] != "Conv":
+					raise ValueError ('Expecting the first layer in the network to be convolutional')
+			
+			if "name" in layer.keys():
+				layer_name = layer["name"]
+
+			if layer["layer_type"] == "Conv":
+				filters = layer["filters"]
+				kernel_size = layer["kernel_size"]
+				stride = layer["strides"]
+				padding = layer["padding"]
+				dilation_rate = layer["dilation_rate"]
+				activation = layer["activation"]
+
+				if i == 0:
+					model.add(Conv2D (filters, (kernel_size[0], kernel_size[1]),
+						activation=activation, padding=padding,
+						strides=(stride[0], stride[1]), dilation_rate=(dilation_rate[0], dilation_rate[1]),
+						data_format="channels_last",
+						input_shape=self.input_shape))
+				else:
+					model.add(Conv2D (filters, (kernel_size[0], kernel_size[1]),
+						activation=activation, padding=padding,
+						strides=(stride[0], stride[1]), dilation_rate=(dilation_rate[0], dilation_rate[1])))
+		
+			elif layer["layer_type"] == "MaxPool":
+				stride = layer["strides"]
+				padding = layer["padding"]
+				pool_size = layer["pool_size"]
+				model.add(MaxPooling2D (pool_size=(pool_size[0], pool_size[1]),
+					strides=(stride[0],stride[1]), padding=padding) )
+			
+			elif layer["layer_type"] == "AvgPool":
+				stride = layer["strides"]
+				padding = layer["padding"]
+				pool_size = layer["pool_size"]
+				model.add(AveragePooling2D (pool_size=(pool_size[0], pool_size[1]),
+					strides=(stride[0],stride[1]), padding=padding) )
+			
+			elif layer["layer_type"] == "Dropout":
+				drop = layer["drop"]
+				model.add(Dropout(drop))
+
+			elif layer["layer_type"] == "Flatten":
+				model.add(Flatten())
+			
+			elif layer["layer_type"] == "Dense":
+				units = layer["units"]
+				activation = layer["activation"]
+				if "regularizer" in layer.keys() and "lambda" in layer.keys():
+					
+					lmbda = layer["lambda"]
+					if layer["regularizer"] == "l2":
+						model.add(Dense(units, activation=activation,
+					      kernel_regularizer=regularizers.l2(lmbda)))
+					elif layer["regularizer"] == "l1":
+						model.add(Dense(units, activation=activation,
+					      kernel_regularizer=regularizers.l1(lmbda)))
+					else:
+						raise ValueError ("unsupported regularizer type '{}'".format(layer["regularizer"]))
+				else:
+					model.add(Dense(units, activation=activation))
+			else:
+				raise ValueError ("unsupported layer type '{}'".format(layer["layer_type"]))
+			
+		print (model.summary())
+
+		adam = Adam (learning_rate=self.network_params["input"]["learning_rate"],
+			beta_1=self.network_params["input"]["adam_beta1"],
+			beta_2=self.network_params["input"]["adam_beta2"],
+			amsgrad=False)
+		
+		model.compile(optimizer=adam,
+				loss=self.network_params["input"]["loss"],
+				metrics=[self.network_params["input"]["metrics"]])
+		
+		return model
+
+
+
 '''
+
 def crossval_CNN2D (pfile, train_data, train_labels, nsplits, sep_str, test_data=None, test_labels=None):
 
 	# read hyperparameters from par file
@@ -239,374 +397,5 @@ def train_eval_CNN2D (pfile, train_data, train_labels, nsplits, sep_str, test_da
 						itest += 1
 
 	return res
+
 '''
-
-class SNREstimator ():
-	def __init__(self, json_path):
-		with open(json_path, "r") as f:
-			self.network_params = json.load(f)
-			self.input_shape = None
-
-	def train_model (self, checkpoint_path, train_data, train_labels, valid_data=None, valid_labels=None):
-		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1)
-		self.input_shape=[train_data.shape[1], train_data.shape[2], 1]
-
-		# load model if the file already exists.
-		# otherwise, build a new model based on the provided function name
-		if (os.path.exists(checkpoint_path)):
-			print (f"loading existing model from path: {checkpoint_path}")
-			model = load_model(checkpoint_path)
-		else:
-			print (f"building new model")
-			model = self.build_model ()
-
-		valid_tuple = None
-		#provide validation data and labels as a tuple
-		if (valid_data is not None and valid_labels is not None):
-			if valid_data.shape[1] != train_data.shape[1] or valid_data.shape[2] != train_data.shape[2]:
-				raise Exception('dimension mismatch between training and validation data')
-			
-			valid_data = valid_data.reshape (valid_data.shape[0], valid_data.shape[1], valid_data.shape[2], 1),
-			valid_tuple = (valid_data, valid_labels)
-
-			checkpoint_monitor='val_loss'
-		else:
-			checkpoint_monitor='loss'
-
-		# add checkpoints for trained model.
-		# Save only the "best" model according to the value of validation data loss, 
-		# or traiing data loss if validation data are not supplied
-		my_callbacks = [
-			#ModelCheckpoint(filepath='%s.epoch={epoch:03d}.val_loss={val_loss:2.4f}.h5'%(checkpoint_path.split('.')[0]),
-			ModelCheckpoint(filepath=checkpoint_path,
-							monitor=checkpoint_monitor,
-							save_best_only=True,
-							verbose=self.network_params["input"]["verbose"])
-		]
-		# Train the model
-		history_callback = model.fit(train_data, train_labels,
-							   epochs=self.network_params["input"]["epochs"],
-							   batch_size=self.network_params["input"]["batch_size"],
-							   validation_data=valid_tuple,
-							   shuffle=True,
-							   callbacks=my_callbacks,
-							   verbose=self.network_params["input"]["verbose"])
-
-		# save model to file
-		model.save (checkpoint_path)
-		return history_callback
-
-	def infer(self, checkpoint_path, test_data):
-		# read hyperparameters from par file
-		batch_size	= self.network_params["input"]["batch_size"]
-		verbose		= self.network_params["input"]["verbose"]
-		
-		if test_data.shape[1] != self.input_shape[0] or test_data.shape[2] != self.input_shape[1]:
-			raise Exception('dimension mismatch between test and training data')
-		test_data = test_data.reshape (test_data.shape[0], test_data.shape[1], test_data.shape[2], 1)
-		
-		# load model from file
-		model = load_model (checkpoint_path)
-		# run inference on test data using the loaded model
-		pred = model.predict (test_data, batch_size=batch_size, verbose=verbose)
-		return pred
-	
-	def build_model (self):
-		model = Sequential()
-
-		# Input Shape: If data_format="channels_first": A 4D tensor with shape: (batch_size, channels, height, width)
-
-		for i, layer in enumerate (self.network_params["input"]["nn_hyperparams"]["layers"]):
-			if i == 0:
-				if layer["layer_type"] != "Conv":
-					raise ValueError ('Expecting the first layer in the network to be convolutional')
-			
-			if "name" in layer.keys():
-				layer_name = layer["name"]
-
-			if layer["layer_type"] == "Conv":
-				filters = layer["filters"]
-				kernel_size = layer["kernel_size"]
-				stride = layer["strides"]
-				padding = layer["padding"]
-				dilation_rate = layer["dilation_rate"]
-				activation = layer["activation"]
-
-				if i == 0:
-					model.add(Conv2D (filters, (kernel_size[0], kernel_size[1]),
-						activation=activation, padding=padding,
-						strides=(stride[0], stride[1]), dilation_rate=(dilation_rate[0], dilation_rate[1]),
-						data_format="channels_last",
-						input_shape=self.input_shape))
-				else:
-					model.add(Conv2D (filters, (kernel_size[0], kernel_size[1]),
-						activation=activation, padding=padding,
-						strides=(stride[0], stride[1]), dilation_rate=(dilation_rate[0], dilation_rate[1])))
-		
-			elif layer["layer_type"] == "MaxPool":
-				stride = layer["strides"]
-				padding = layer["padding"]
-				pool_size = layer["pool_size"]
-				model.add(MaxPooling2D (pool_size=(pool_size[0], pool_size[1]),
-					strides=(stride[0],stride[1]), padding=padding) )
-			
-			elif layer["layer_type"] == "AvgPool":
-				stride = layer["strides"]
-				padding = layer["padding"]
-				pool_size = layer["pool_size"]
-				model.add(AveragePooling2D (pool_size=(pool_size[0], pool_size[1]),
-					strides=(stride[0],stride[1]), padding=padding) )
-			
-			elif layer["layer_type"] == "Dropout":
-				drop = layer["drop"]
-				model.add(Dropout(drop))
-
-			elif layer["layer_type"] == "Flatten":
-				model.add(Flatten())
-			
-			elif layer["layer_type"] == "Dense":
-				units = layer["units"]
-				activation = layer["activation"]
-				if "regularizer" in layer.keys() and "lambda" in layer.keys():
-					
-					lmbda = layer["lambda"]
-					if layer["regularizer"] == "l2":
-						model.add(Dense(units, activation=activation,
-					      kernel_regularizer=regularizers.l2(lmbda)))
-					elif layer["regularizer"] == "l1":
-						model.add(Dense(units, activation=activation,
-					      kernel_regularizer=regularizers.l1(lmbda)))
-					else:
-						raise ValueError ("unsupported regularizer type '{}'".format(layer["regularizer"]))
-				else:
-					model.add(Dense(units, activation=activation))
-			else:
-				raise ValueError ("unsupported layer type '{}'".format(layer["layer_type"]))
-			
-		print (model.summary())
-
-		adam = Adam (learning_rate=self.network_params["input"]["learning_rate"],
-			beta_1=self.network_params["input"]["adam_beta1"],
-			beta_2=self.network_params["input"]["adam_beta2"],
-			amsgrad=False)
-		
-		model.compile(optimizer=adam,
-				loss=self.network_params["input"]["loss"],
-				metrics=[self.network_params["input"]["metrics"]])
-		
-		return model
-
-
-# return classification precision and recall per class
-def precision_recall (y_true, y_pred):
-
-	res = []
-	y_unique = np.unique(y_true)
-
-	for label in y_unique:
-		precision=0.; recall=0.; F1=0.; jaccard=0.; specificity=0.
-		TP=0; TN=0; FN=0; FP=0; 
-		zip_y = zip (y_true, y_pred)
-
-		TP = sum (int (yt==label and yp==label) for yt, yp in zip_y)
-		TN = sum (int (yt!=label and yp!=label) for yt, yp in zip_y)
-		FP = sum (int (yt!=label and yp==label) for yt, yp in zip_y)
-		FN = sum (int (yt==label and yp!=label) for yt, yp in zip_y)
-
-		if (TP+FP > 0):
-			precision	= float(TP) / (TP+FP)
-		if (TP+FN > 0):
-			recall		= float(TP) / (TP+FN)
-		if (TP+FP+FN > 0):
-			jaccard		= float(TP) / (TP+FP+FN)
-		if (TN+FP > 0):
-			specificity	= 1. - float(FP) / (TN+FP)
-		if (precision+recall > 0):
-			F1 = 2.*precision*recall / (precision+recall)
-
-
-		metrics = {str(label): [precision, recall, F1, jaccard, specificity]}
-		res.append (metrics)
-
-	return res
-
-# return weighted average of classification precision and recall
-def precision_recall_avg (y_true, y_pred):
-
-	res = []
-	y_unique, y_counts = np.unique(y_true, return_counts=True)
-	y_dict=dict(zip(y_unique, y_counts))
-	ny = y_true.size
-
-	precision=0.; recall=0.; F1=0.; jaccard=0.; specificity=0.
-
-	for label in y_dict.keys():
-		TP=0; TN=0; FN=0; FP=0; 
-		zip_y = zip (y_true, y_pred)
-
-		TP = sum (int (yt==label and yp==label) for yt, yp in zip_y)
-		TN = sum (int (yt!=label and yp!=label) for yt, yp in zip_y)
-		FP = sum (int (yt!=label and yp==label) for yt, yp in zip_y)
-		FN = sum (int (yt==label and yp!=label) for yt, yp in zip_y)
-
-		if (TP+FP > 0):
-			precision	+= float(TP) / (TP+FP) * y_dict[label]
-		if (TP+FN > 0):
-			recall		+= float(TP) / (TP+FN) * y_dict[label]
-		if (TP+FP+FN > 0):
-			jaccard		+= float(TP) / (TP+FP+FN) * y_dict[label]
-		if (TN+FP > 0):
-			specificity	+= (1. - float(FP) / (TN+FP)) * y_dict[label]
-		if (precision+recall > 0):
-			F1 += 2.*precision*recall / (precision+recall)
-
-	F1 = 2.*(precision/ny * recall/ny) / (precision/ny + recall/ny)
-
-	metrics = {'Average': [precision/ny, recall/ny, F1, jaccard/ny, specificity/ny]}
-	res.append (metrics)
-	return res
-
-# calculate confusion matrix
-def confusion_matrix (y_true, y_pred):
-
-	y_unique = np.unique(y_true)
-
-	CM = np.zeros ([len(y_unique), len(y_unique)], dtype=np.float32)
-
-	# labels may not be consecutive index numbers, so use a dictionary to convert labels to indices in confusion matrix 
-	class_dict={}
-	for i, y in enumerate(y_unique):
-		class_dict[y] = i
-
-	for label in zip (y_true, y_pred):
-		CM[class_dict[label[1]]][class_dict[label[0]]] += float (label[0]==label[1])
-		CM[class_dict[label[1]]][class_dict[label[0]]] += float (label[0]!=label[1])
-
-	return CM
-
-# return arrays of true positive and false positives per class
-def true_false_positive_perclass (y_true, y_pred):
-
-	y_unique = np.unique(y_true)
-
-	TP = np.empty ([len(y_unique), len(y_true)], dtype=np.float32)
-	FP = np.empty ([len(y_unique), len(y_true)], dtype=np.float32)
-
-	for iy, y in enumerate(y_unique):
-		for ipred, label in enumerate(zip (y_true, y_pred)):
-			TP[iy][ipred] = float (label[0]==y and label[1]==y)
-			FP[iy][ipred] = float (label[0]!=y and label[1]==y)
-
-	return TP, FP
-
-# return arrays of total true positives and false positives
-def true_false_positive_total (y_true, y_pred):
-
-	TP = np.empty ([len(y_true)], dtype=np.float32)
-	FP = np.empty ([len(y_true)], dtype=np.float32)
-
-	for ipred, label in enumerate(zip (y_true, y_pred)):
-		TP[ipred] = float (label[0]==label[1])
-		FP[ipred] = float (label[0]!=label[1])
-
-	return TP, FP
-
-# calculate true positive rate, false positive rate, precision and F1 per class.
-# Also calculate the micro-average and macro-average of each metric.
-def ROC_poly (y_true_poly, y_pred_poly, activation, n_op, o_op, d_op):
-
-	if y_true_poly.shape[0] != y_pred_poly.shape[1]:
-		print ("ROC_poly: Number of observations in true and predicted labels must be equal")
-		sys.exit(1)
-	if y_true_poly.shape[1] != y_pred_poly.shape[2]:
-		print ("ROC_poly: Number of classes in true and predicted labels must be equal")
-		sys.exit(1)
-	if y_true_poly.shape[0] != activation.shape[0]:
-		print ("ROC_poly: Number of observations in true labels and activations must be equal")
-		sys.exit(1)
-	if y_true_poly.shape[1] != activation.shape[1]:
-		print ("ROC_poly: Number of classes in true labels and activations must be equal")
-		sys.exit(1)
-
-	nclasses = y_true_poly.shape[1]
-
-	TPR = np.zeros([nclasses+2,n_op], dtype=np.float)
-	FPR = np.zeros([nclasses+2,n_op], dtype=np.float)
-	precision = np.zeros([nclasses+2,n_op], dtype=np.float)
-	F1 = np.zeros([nclasses+2,n_op], dtype=np.float)
-	loss = np.zeros([nclasses+1], dtype=np.float)
-
-	# iterate over operating thresholds and class index to calculate metrics for each individual class
-	for ip,op in enumerate(np.arange(o_op, (n_op-1)*d_op, d_op)):
-		for ic in xrange(nclasses):
-			diff = y_pred_poly[ip,:,ic] - y_true_poly[:,ic]
-			mult = y_pred_poly[ip,:,ic] * y_true_poly[:,ic]
-
-			# example of logic of the next section:
-			# case:				[TP  TN  FP  FN]
-			# predicted labels: [1   0   1   0]
-			# true labels:      [1   0   0   1]
-			# diff(pred-true):	[0   0   1   -1]
-			# mult(pred*true):	[1   0   0   0]
-
-			FP = len(diff[diff == 1])
-			FN = len(diff[diff == -1])
-			TP_TN = len(diff[diff == 0])
-			TP = len(mult[mult == 1])
-			TN = TP_TN - TP
-
-			if TP+FN > 0.:
-				TPR[ic,ip] = float(TP) / (TP+FN) # recall = true positive rate
-			if FP+TN > 0.:
-				FPR[ic,ip] = float(FP) / (FP+TN) # false positive rate
-			if TP+FP > 0.:
-				precision[ic,ip]	= float(TP) / (TP+FP)
-			if precision[ic,ip] + TPR[ic,ip] > 0.:
-				F1[ic,ip] = 2.*precision[ic,ip]*TPR[ic,ip] / (precision[ic,ip]+TPR[ic,ip])
-
-			del diff, mult
-
-	# iterate over operating thresholds to generate micro-average of metrics for all classes combined
-	for ip,op in enumerate(np.arange(o_op, (n_op-1)*d_op, d_op)):
-		diff = y_pred_poly[ip,:,:] - y_true_poly[:,:]
-		mult = y_pred_poly[ip,:,:] * y_true_poly[:,:]
-
-		# example of logic of the next section:
-		# case:				[TP  TN  FP  FN]
-		# predicted labels: [1   0   1   0]
-		# true labels:      [1   0   0   1]
-		# diff(pred-true):	[0   0   1   -1]
-		# mult(pred*true):	[1   0   0   0]
-
-		FP = len(diff[diff == 1])
-		FN = len(diff[diff == -1])
-		TP_TN = len(diff[diff == 0])
-		TP = len(mult[mult == 1])
-		TN = TP_TN - TP
-
-		if TP+FN > 0.:
-			TPR[nclasses,ip] = float(TP) / (TP+FN) # recall = true positive rate
-		if FP+TN > 0.:
-			FPR[nclasses,ip] = float(FP) / (FP+TN) # false positive rate
-		if TP+FP > 0.:
-			precision[nclasses,ip]	= float(TP) / (TP+FP)
-		if precision[nclasses,ip] + TPR[nclasses,ip] > 0.:
-			F1[nclasses,ip] = 2.*precision[nclasses,ip]*TPR[nclasses,ip] / (precision[nclasses,ip]+TPR[nclasses,ip])
-
-		del diff, mult
-
-	# calculate macro-average of each metric
-	for ip,op in enumerate(np.arange(o_op, (n_op-1)*d_op, d_op)):
-		TPR[nclasses+1,ip] = TPR[0:nclasses,ip].mean()
-		FPR[nclasses+1,ip] = FPR[0:nclasses,ip].mean()
-		precision[nclasses+1,ip] = precision[0:nclasses,ip].mean()
-		F1[nclasses+1,ip] = F1[0:nclasses,ip].mean()
-
-	# calculate binary cross-entropy loss
-	for ic in xrange(nclasses):
-		loss[ic] = -np.mean(y_true_poly[:,ic] * np.log2(activation[:,ic]+np.finfo(np.float32).eps) + (1-y_true_poly[:,ic]) * np.log2(1-activation[:,ic]+np.finfo(np.float32).eps))
-
-	loss[nclasses] = np.mean(loss[0:nclasses])
-
-	return TPR, FPR, precision, F1, loss
-

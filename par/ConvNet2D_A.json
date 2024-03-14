@@ -9,7 +9,7 @@
 		"adam_beta1": 0.9,
 		"adam_beta2": 0.999,
 		"adam_weight_decay": 1e-2,
-		"metrics": "mean_squared_error",
+		"metrics": "mean_absolute_error",
 		"nn_hyperparams": {
 		"input_shape": [40,90,1],
 		"layers": [
