@@ -1,0 +1,41 @@
+{
+    "input": {
+        "source_directory": "/home/ohad/DG/data",
+        "target_directory": "/home/ohad/DG/data/train_augmented",
+        "data_directories": {
+            "speech": [
+                { "directory_name": "librispeech-dev-clean", "percent": 100 }
+            ],
+            "background": [
+                { "directory_name": "airport", "percent": 100 }
+            ]
+        },
+        "augmentation_number": 10,
+        "augmentation_length": 16000,
+        "augmentation_defaults": {   
+            "background": true,
+            "foreground_volume_domain": "linear",
+            "foreground_volume_max": 1.0,
+            "foreground_volume_min": 0.1,
+            "foreground_volume_distribution": "uniform",
+            "snr_distribution": "uniform",
+            "snr_min": 0,
+            "snr_max": 24,
+            "pitch_shift_distribution": "uniform",
+            "pitch_shift_min": -1.0,
+            "pitch_shift_max": 1.0,
+            "dilate_distribution": "uniform",
+            "dilate_min": 0.9,
+            "dilate_max": 1.1
+        },
+        "filterbank_params": {
+            "feature_extractor": "log-mel",
+            "nfft": 320,
+            "hop_length": 160,
+            "wincount": 100,
+            "nfilters": 40,
+            "sample_rate": 16000,
+            "preemphasis_coefficient": 0.96875
+        }
+    }
+}
