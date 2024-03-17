@@ -6,6 +6,7 @@ import numpy as np
 from librosa import power_to_db, stft, magphase
 from librosa.feature import melspectrogram
 from librosa.display import specshow
+import matplotlib.pyplot as plt
 
 class FeatureExtract:
     """A feature extractor for input audio in numpy arrays
@@ -149,3 +150,58 @@ class FeatureExtract:
             features=feature_data
         )
         return fe
+    
+    
+    def get_matplot_waveform(self):
+        """Get the matplotlib waveform associated with the current Wav.
+
+        Returns:
+            (Matplot Plt)
+        """
+        plt.figure()
+        plt.title("Waveform")
+        plt.ylim(-1.0, 1.0)
+        plt.plot(self.wav_data.flatten())
+        return plt
+
+
+    def save_waveform(self, file_path=None):
+        """Render the waveform of the wave file as an image and save it.
+
+        Args:
+            filename (string): Where to save the figure.
+        """
+        assert file_path is not None
+        plt = self.get_matplot_waveform()
+        plt.savefig(file_path)
+        # plt.show()  # Uncomment to plot out on screen
+        plt.close()
+
+    def get_matplot_spectrogram(self, nfft=512):
+        """Get the matplotlib spectrogram associated with the current
+        Wav."""
+        data = self.wav_data.flatten()
+        plt.specgram(data, nfft, self.sample_rate)
+        plt.axis("off")
+        plt.title("Spectrogram")
+        return plt
+
+
+    def save_spectrogram(self, file_path=None):
+        """Create a spectrogram image for visualizing the current file and save
+        it.
+
+        Args:
+            filename (string): Where to save the figure.
+        """
+        assert file_path is not None
+        plt = self.get_matplot_spectrogram()
+        plt.savefig(
+            file_path,
+            dpi=150,  # Dots per inch
+            facecolor="none",
+            bbox_inches="tight",
+            pad_inches=0,
+        )
+        # plt.show()  # Uncomment to plot out immediately
+        plt.close()

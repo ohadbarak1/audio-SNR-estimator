@@ -11,16 +11,6 @@ from wav_utils import load_wav_file, sample_distribution
 from wav_metadata import WavMetadata
 
 
-def plt_import(func):
-    def inner(*args, **kwargs):
-        global plt
-        import matplotlib.pyplot as plt
-
-        return func(*args, **kwargs)
-
-    return inner
-
-
 class BackgroundWav:
     """A wrapper for wav files that are used as background for
     augmentations. No augmentation functionality.
@@ -398,60 +388,3 @@ class Wav:
             BO=-1,
         )
 
-    @plt_import
-    def get_matplot_waveform(self):
-        """Get the matplotlib waveform associated with the current Wav.
-
-        Returns:
-            (Matplot Plt)
-        """
-        plt.figure()
-        plt.title("Waveform")
-        plt.ylim(-1.0, 1.0)
-        plt.plot(self.wav_data.flatten())
-        return plt
-
-    @plt_import
-    def save_waveform(self, file_path=None):
-        """Render the waveform of the wave file as an image and save it.
-
-        Args:
-            filename (string): Where to save the figure.
-        """
-        assert file_path is not None
-        plt = self.get_matplot_waveform()
-        plt.savefig(file_path)
-        # plt.show()  # Uncomment to plot out immediately
-        plt.close()
-
-    @plt_import
-    def get_matplot_spectrogram(self):
-        """Get the matplotlib spectrogram associated with the current
-        Wav."""
-        data = self.wav_data.flatten()
-        nfft = 256  # Length of the windowing segments
-        fs = 256  # Sampling frequency
-        plt.specgram(data, nfft, fs)
-        plt.axis("off")
-        plt.title("Spectrogram")
-        return plt
-
-    @plt_import
-    def save_spectrogram(self, file_path=None):
-        """Create a spectrogram image for visualizing the current file and save
-        it.
-
-        Args:
-            filename (string): Where to save the figure.
-        """
-        assert file_path is not None
-        plt = self.get_matplot_spectrogram()
-        plt.savefig(
-            file_path,
-            dpi=150,  # Dots per inch
-            facecolor="none",
-            bbox_inches="tight",
-            pad_inches=0,
-        )
-        # plt.show()  # Uncomment to plot out immediately
-        plt.close()
