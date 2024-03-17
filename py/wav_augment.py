@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 import soundfile as sf
 from scipy import signal
-import librosa.effects as la
+import librosa as la
 
 from wav_utils import load_wav_file, sample_distribution
 from wav_metadata import WavMetadata
@@ -22,8 +22,8 @@ def plt_import(func):
 
 
 class BackgroundWav:
-    """A light weight wrapper for wave files that are used as background for
-    augmentations. This class does not provide augmentation functionality.
+    """A wrapper for wav files that are used as background for
+    augmentations. No augmentation functionality.
 
     Args:
         label (string): The true class label of the starting file.
@@ -46,8 +46,8 @@ class BackgroundWav:
 
 
 class Wav:
-    """A wrapper for wave files and the operations we want to perform on them,
-    including loading, writing, data augmentation, visualization, etc.
+    """A wrapper for wav files and the operations we want to perform on them,
+    including loading, writing, data augmentation, visualization etc.
 
     Args:
         label (string): The true class label of the starting file.
@@ -112,7 +112,7 @@ class Wav:
 
         sf.write(file_path, wav_data, sample_rate)
 
-    def _np_deterministic_augment_data(
+    def _apply_data_augmentations(
         self,
         idx,
         background,
@@ -131,7 +131,7 @@ class Wav:
         """Use numpy to augment the data according to the params that have been
         sampled or previously generated.
 
-        Use Librosa for dilation and pitch shifting
+        Use Librosa for dilation, pitch shifting and feature extraction
         
         Args:
             idx (int): The integer identifier to associate with the metadata.
@@ -157,9 +157,9 @@ class Wav:
 
         foreground = self.wav_data.flatten()
         if dilate:
-            foreground = la.time_stretch (foreground, rate=dilate)
+            foreground = la.effects.time_stretch (foreground, rate=dilate)
         if pitch_shift:
-            foreground = la.pitch_shift (foreground, sr=sample_rate, n_steps=pitch_shift)
+            foreground = la.effects.pitch_shift (foreground, sr=sample_rate, n_steps=pitch_shift)
 
         if len(foreground > augmentation_length):
             foreground_offset = np.random.randint(0, len(foreground) - self.augmentation_samples + 1)
@@ -200,8 +200,8 @@ class Wav:
             initial_snr = np.mean(np.power(scaled_foreground[scaled_foreground != 0], 2))\
                         / np.mean(np.power(background_reshaped, 2) + 1e-6)
             
-            snr_ratio = pow(10.0, snr / 10.0)
-            noise_coeff = np.sqrt(initial_snr / snr_ratio)
+            snr_linear = pow(10.0, snr / 10.0) # snr is specified in dB power units
+            noise_coeff = np.sqrt(initial_snr / snr_linear)
             new_background_noise = background_reshaped * noise_coeff
 
             assert len(scaled_foreground) == augmentation_length
@@ -365,7 +365,7 @@ class Wav:
             "spectral_shaping_factor": spectral_shaping_factor,
             "foreground_volume_norm": foreground_volume_norm,
         }
-        return self._np_deterministic_augment_data(**augmentation_args)
+        return self._apply_data_augmentations(**augmentation_args)
 
     def get_wav_metadata(self):
         """Return the current metadata object or construct one if it is not

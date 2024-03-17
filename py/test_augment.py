@@ -51,7 +51,7 @@ if __name__ == '__main__':
             snr_max=augs["snr_max"]
 
         )
-
+        print (aug_wav.meta.get_augmentation_params()["snr"])
         aug_wav_path = os.path.join(augment_params["input"]["target_directory"], aug_wav.filename)
         aug_wav.save_wav_file (file_path=aug_wav_path, sample_rate=aug_wav.sample_rate)
 

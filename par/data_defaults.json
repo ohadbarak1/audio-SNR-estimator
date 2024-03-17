@@ -30,10 +30,11 @@
         },
         "filterbank_params": {
             "feature_extractor": "log-mel",
-            "nfft": 320,
-            "hop_length": 160,
-            "wincount": 100,
-            "nfilters": 40,
+            "nfft": 512,
+            "win_length": 512,
+            "hop_length": 256,
+            "wincount": 62,
+            "nfilters": 64,
             "sample_rate": 16000,
             "preemphasis_coefficient": 0.96875
         }
