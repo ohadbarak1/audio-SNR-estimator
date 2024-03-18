@@ -1,7 +1,8 @@
 {
     "input": {
         "source_directory": "/home/ohad/DG/data",
-        "target_directory": "/home/ohad/DG/data/train_augmented",
+        "augmented_directory": "/home/ohad/DG/data/augmented",
+        "package_directory": "/home/ohad/DG/data/packages/train",
         "data_directories": {
             "speech": [
                 { "directory_name": "librispeech-dev-clean", "percent": 100 }
@@ -29,7 +30,7 @@
             "dilate_max": 1.1
         },
         "filterbank_params": {
-            "feature_extractor": "log-mel",
+            "feature_name": "log-mel",
             "nfft": 512,
             "win_length": 512,
             "hop_length": 256,

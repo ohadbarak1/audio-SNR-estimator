@@ -12,8 +12,8 @@ class WavMetadata(object):
     or parse a filename into the attributes that constructed it.
 
     Args:
-        LB (string): The word within the file.
-        IX (int): The index of wav file as described within the metadata file
+        LB (string): The foreground label
+        IX (int): The index of wav file
         AV (float): The audio volume for the foreground
         SNR (float): The signal to noise ratio
         FN (string): The foreground filename
@@ -45,11 +45,11 @@ class WavMetadata(object):
         if filename is not None:
             elements = filename.split("/")[-1].split(self.DELIMITER)
             self.LB = elements[0][2:]  # class label
+            self.FN = elements[1][2:]  # original file name
             self.IX = int(elements[2][2:])  # index
             self.AV = float(elements[3][2:])  # audio volume
-            self.SNR = float(elements[4][2:])  # SNR
+            self.SNR = float(elements[4][3:])  # SNR
             self.BO = int(elements[5][2:])  # background offset
-            self.FN = elements[1][2:]  # original file name
             self.BF = elements[6][2:]
             self.PS = elements[7][2:]
             self.DL = elements[8][2:-4]
@@ -143,6 +143,8 @@ class WavMetadata(object):
     def get_filename(self):
         """Get the filename.
         """
+        PS = 0. if not self.PS else self.PS
+        DL = 0. if not self.DL else self.DL
         return (
             "LB"
             + self.LB
@@ -154,10 +156,10 @@ class WavMetadata(object):
             + str(self.IX)
             + self.DELIMITER
             + "AV"
-            + str(self.AV)
+            + "{:.4f}".format(self.AV)
             + self.DELIMITER
             + "SNR"
-            + str(self.SNR)
+            + "{:.4f}".format(self.SNR)
             + self.DELIMITER
             + "BO"
             + str(self.BO)
@@ -166,10 +168,10 @@ class WavMetadata(object):
             + self.BF
             + self.DELIMITER
             + "PS"
-            + str(self.PS)
+            + "{:.4f}".format(PS)
             + self.DELIMITER
             + "DL"
-            + str(self.DL)
+            + "{:.4f}".format(DL)
             + ".wav"
         )
 
