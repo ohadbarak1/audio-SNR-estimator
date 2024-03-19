@@ -1,6 +1,8 @@
 {
 	"input": {
 		"verbose": 2,
+		"max_SNR_dB": 24,
+		"min_SNR_dB": 0,
 		"loss": "mean_absolute_error",
 		"horovod": 4,
 		"learning_rate": 0.0001,
@@ -11,7 +13,6 @@
 		"adam_weight_decay": 1e-2,
 		"metrics": "mean_absolute_error",
 		"nn_hyperparams": {
-		"input_shape": [40,90,1],
 		"layers": [
 			{ "layer_type": "Conv", "name": "Conv_1", "filters": 64, "kernel_size": [5, 5], "strides": [2, 1], "padding": "valid", "dilation_rate": [1, 1],
 				"activation": "relu6" },

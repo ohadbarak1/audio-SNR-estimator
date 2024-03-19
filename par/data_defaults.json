@@ -11,7 +11,8 @@
                 { "directory_name": "airport", "percent": 100 }
             ]
         },
-        "augmentation_number": 10,
+        "augmentation_number": 20,
+        "background_per_foreground": 10,
         "augmentation_length": 16000,
         "augmentation_defaults": {   
             "background": true,
@@ -19,6 +20,7 @@
             "foreground_volume_max": 1.0,
             "foreground_volume_min": 0.1,
             "foreground_volume_distribution": "uniform",
+            "foreground_volume_norm": false,
             "snr_distribution": "uniform",
             "snr_min": 0,
             "snr_max": 24,

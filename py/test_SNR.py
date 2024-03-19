@@ -15,21 +15,22 @@ if __name__ == '__main__':
     valid_labels = np.random.rand(nvalid).astype(np.float32)
     test_data = np.random.rand(ntest,40,90).astype(np.float32)
 
+    # model expects input in dB
+    train_labels = 20*(np.log10(train_labels * 24.))
+    valid_labels = 20*(np.log10(valid_labels * 24.))
+    print (train_labels)
+    print (valid_labels)
+
+
     json_path = "/home/ohad/DG/par/ConvNet2D_A.json"
     model_path = "/home/ohad/DG/models/test.h5"
     SNR_trainer = SNREstimator(json_path=json_path)
     metrics_out = SNR_trainer.train_model(model_path,
                                       train_data=train_data, train_labels=train_labels,
                                       valid_data=valid_data, valid_labels=valid_labels)
-    print (metrics_out.history.keys())
 
-    loss_hist		= np.array(metrics_out.history['loss'], dtype=np.float32)
-    mse_hist		= np.array(metrics_out.history['mean_absolute_error'], dtype=np.float32)
-    val_loss_hist	= np.array(metrics_out.history['val_loss'], dtype=np.float32)
-    val_mse_hist	= np.array(metrics_out.history['val_mean_absolute_error'], dtype=np.float32)
-
-    print (f"mse_hist: {mse_hist}")
-    print (f"val_mse_hist: {val_mse_hist}")
+    for metric in metrics_out.history.keys():
+        print (f"{metric}: {metrics_out.history[metric]}")
 
     pred = SNR_trainer.infer (model_path, test_data=test_data)
     print (f"predictions: {pred}")

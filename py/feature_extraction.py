@@ -136,7 +136,7 @@ class FeatureExtract:
         n_windows = S.shape[-1] // wincount
         # crop out remainder of frames
         S = S[:, 0:n_windows*wincount] 
-        # transpose so that frequency is on the fast axis. Copy so array stays C-contiguous.
+        # transpose so that frequency is on the fast axis. Copy so array stays C-contiguous after transpose.
         feature_data = S.transpose().copy()
         feature_data = feature_data.reshape(n_windows, wincount, nfilters)
 

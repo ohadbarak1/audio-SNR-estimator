@@ -9,31 +9,44 @@ import sys
 import os
 import json
 
-
-
-
 class SNREstimator ():
 	def __init__(self, json_path):
 		with open(json_path, "r") as f:
 			self.network_params = json.load(f)
 			self.input_shape = None
+			min_SNR_dB = self.network_params["input"]["min_SNR_dB"]
+			max_SNR_dB = self.network_params["input"]["max_SNR_dB"]
+			self.min_SNR = pow (10, min_SNR_dB/20)
+			self.max_SNR = pow (10, max_SNR_dB/20)
 
 	def train_model (self, checkpoint_path, train_data, train_labels, valid_data=None, valid_labels=None):
-		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1)
+		if len(train_data.shape) != 3:
+			raise Exception ('training data array should have 3 dimension: [n_samples, time, feature]')
+		if len(train_labels.shape) != 1:
+			raise Exception ('training label data array should have 1 dimension: [n_samples]')
+		
+		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1) # single channel audio input
 		self.input_shape=[train_data.shape[1], train_data.shape[2], 1]
 
-		# load model if the file already exists.
-		# otherwise, build a new model based on the provided function name
+		train_labels = self.dB_to_linear_range(train_labels)
+
+		# load model if the model file already exists.
+		# otherwise, build a new model
 		if (os.path.exists(checkpoint_path)):
 			print (f"loading existing model from path: {checkpoint_path}")
 			model = load_model(checkpoint_path)
 		else:
-			print (f"building new model")
-			model = self.build_model ()
+			print (f"generating new model")
+			model = self.build_CNN_model ()
 
 		valid_tuple = None
 		#provide validation data and labels as a tuple
 		if (valid_data is not None and valid_labels is not None):
+			if len(valid_data.shape) != 3:
+				raise Exception ('validation data array should have 3 dimension: [n_samples, time, feature]')
+			if len(valid_labels.shape) != 1:
+				raise Exception ('validation label data array should have 1 dimension: [n_samples]')
+			
 			if valid_data.shape[1] != train_data.shape[1] or valid_data.shape[2] != train_data.shape[2]:
 				raise Exception('dimension mismatch between training and validation data')
 			
@@ -80,9 +93,10 @@ class SNREstimator ():
 		model = load_model (checkpoint_path)
 		# run inference on test data using the loaded model
 		pred = model.predict (test_data, batch_size=batch_size, verbose=verbose)
+		pred = self.linear_range_to_dB(pred)
 		return pred
 	
-	def build_model (self):
+	def build_CNN_model (self):
 		model = Sequential()
 
 		# Input Shape: If data_format="channels_first": A 4D tensor with shape: (batch_size, channels, height, width)
@@ -103,6 +117,7 @@ class SNREstimator ():
 				dilation_rate = layer["dilation_rate"]
 				activation = layer["activation"]
 
+				# define input shape for first layer
 				if i == 0:
 					model.add(Conv2D (filters, (kernel_size[0], kernel_size[1]),
 						activation=activation, padding=padding,
@@ -166,6 +181,13 @@ class SNREstimator ():
 				metrics=[self.network_params["input"]["metrics"]])
 		
 		return model
+
+	def dB_to_linear_range (self, dB_labels):
+		return (pow(10, dB_labels/20) - self.min_SNR) / (self.max_SNR - self.min_SNR)
+	
+	def linear_range_to_dB (self, linear_labels):
+		return 20*(np.log10(linear_labels * (self.max_SNR - self.min_SNR) + self.min_SNR))
+
 
 
 
