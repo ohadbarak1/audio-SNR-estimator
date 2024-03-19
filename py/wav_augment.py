@@ -271,7 +271,7 @@ class Wav:
                 The full range value is 1.0.
             foreground_volume_min (float): The minimum value of the signal in augmentation.
                 The full range value is 0.0, which results in silence.
-            foreground_volume_norm (bool): If the foreground should be normalized or not
+            foreground_volume_norm (bool): Should the foreground should be normalized
             snr_distribution (str): snr distribution over range.
             snr_min (int): The minimum signal to noise ratio.
             snr_max (int): The maximum signal to noise ratio.
@@ -291,10 +291,8 @@ class Wav:
 
         is_silence = self.label == "silence"
         if background and background_wav is None:
-            raise ValueError(
-                "To augment, Please provide a background file when background is "
-                "set to True"
-            )
+            raise ValueError("Please provide a background file when background is set to True")
+        
         if background:
             background_label = background_wav.label
             background_samples = background_wav.wav_data.flatten()
@@ -303,9 +301,7 @@ class Wav:
                 background_offset = np.random.randint(0, len(background_samples) - self.augmentation_samples + 1)
             else:
                 # The background files should currently be longer than 1 second
-                raise Exception(
-                    "length of '{}' is only {}".format(background_wav.filepath, len(background_samples))
-                )
+                raise Exception("length of '{}' is only {}".format(background_wav.filepath, len(background_samples)))
         else:
             background_label = "NOBACKGROUND"
             background_samples = None

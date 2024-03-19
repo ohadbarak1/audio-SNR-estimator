@@ -1,18 +1,26 @@
 {
     "input": {
-        "source_directory": "/home/ohad/DG/data",
-        "augmented_directory": "/home/ohad/DG/data/augmented",
-        "package_directory": "/home/ohad/DG/data/packages/train",
+        "source_directory": "/home/ohad/DG/data/source",
         "data_directories": {
             "speech": [
                 { "directory_name": "librispeech-dev-clean", "percent": 100 }
             ],
             "background": [
-                { "directory_name": "airport", "percent": 100 }
+                { "directory_name": "airport", "percent": 100 },
+                { "directory_name": "bus", "percent": 100 },
+                { "directory_name": "metro", "percent": 100 },
+                { "directory_name": "park", "percent": 100 },
+                { "directory_name": "square", "percent": 100 },
+                { "directory_name": "mall", "percent": 100 }
             ]
         },
+        "train_pct": 80,
+        "valid_pct": 10,
+        "test_pct": 10,
+        "augmented_directory": "/home/ohad/DG/data/augmented",
+        "package_directory": "/home/ohad/DG/data/packages",
         "augmentation_number": 20,
-        "background_per_foreground": 10,
+        "backgrounds_per_foreground": 10,
         "augmentation_length": 16000,
         "augmentation_defaults": {   
             "background": true,
