@@ -11,22 +11,23 @@
                 { "directory_name": "metro", "percent": 100 },
                 { "directory_name": "park", "percent": 100 },
                 { "directory_name": "square", "percent": 100 },
-                { "directory_name": "mall", "percent": 100 }
+                { "directory_name": "mall", "percent": 100 },
+                { "directory_name": "street", "percent": 100 }
             ]
         },
         "train_pct": 80,
-        "valid_pct": 10,
-        "test_pct": 10,
+        "valid_pct": 15,
+        "test_pct": 5,
         "augmented_directory": "/home/ohad/DG/data/augmented",
         "package_directory": "/home/ohad/DG/data/packages",
-        "augmentation_number": 20,
+        "augmentation_number": 1000,
         "backgrounds_per_foreground": 10,
         "augmentation_length": 16000,
         "augmentation_defaults": {   
             "background": true,
             "foreground_volume_domain": "linear",
             "foreground_volume_max": 1.0,
-            "foreground_volume_min": 0.1,
+            "foreground_volume_min": 0.125,
             "foreground_volume_distribution": "uniform",
             "foreground_volume_norm": false,
             "snr_distribution": "uniform",
