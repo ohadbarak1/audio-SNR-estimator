@@ -28,7 +28,7 @@ class SNREstimator ():
 		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1) # single channel audio input
 		self.input_shape=[train_data.shape[1], train_data.shape[2], 1]
 
-		train_labels = self.dB_to_linear_range(train_labels)
+		#train_labels = self.dB_to_linear_range(train_labels)
 
 		# load model if the model file already exists.
 		# otherwise, build a new model
@@ -93,7 +93,7 @@ class SNREstimator ():
 		model = load_model (checkpoint_path)
 		# run inference on test data using the loaded model
 		pred = model.predict (test_data, batch_size=batch_size, verbose=verbose)
-		pred = self.linear_range_to_dB(pred)
+		#pred = self.linear_range_to_dB(pred)
 		return pred
 	
 	def build_CNN_model (self):

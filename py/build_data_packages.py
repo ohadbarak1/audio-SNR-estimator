@@ -6,7 +6,6 @@ import json
 import os
 from npy_append_array import NpyAppendArray
 from datetime import datetime
-import hashlib
 from random import shuffle
 import argparse
 
@@ -106,12 +105,11 @@ def build_packages (
 
 
 def data_packager(json_path):
-    seed = 24601
+    #seed = 24601
+    seed = 121212
     np.random.seed(seed)
     date_string = f'{datetime.now():%Y%m%d_%H%M%S}'
     #hashlib.shake_128(date_string.encode("ascii")).hexdigest(8)
-
-    #json_path = "/home/ohad/DG/par/data_defaults.json"
 
     with open(json_path, "r") as f:
         augment_params = json.load(f)
@@ -130,8 +128,8 @@ def data_packager(json_path):
             "sum of train+valid+test percentage should be 100"
         )
 
-    package_dir = os.path.join(input["package_directory"], date_string)
-    augmented_dir = os.path.join(input["augmented_directory"], date_string)
+    package_dir = os.path.join(input["package_directory"], date_string+'_'+str(input["augmentation_number"])+'_files')
+    augmented_dir = os.path.join(input["augmented_directory"], date_string+'_'+str(input["augmentation_number"])+'_files')
     os.makedirs(package_dir)
     os.makedirs(augmented_dir)
 
