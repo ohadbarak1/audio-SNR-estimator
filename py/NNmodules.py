@@ -16,6 +16,9 @@ class SNREstimator ():
 			self.input_shape = None
 			min_SNR_dB = self.network_params["input"]["min_SNR_dB"]
 			max_SNR_dB = self.network_params["input"]["max_SNR_dB"]
+			self.map_range = self.network_params["input"]["map_range"]
+			if not isinstance(self.map_range, list):
+				raise ValueError ('map_range should be a list: [min_range, max_range]')
 			self.min_SNR = pow (10, min_SNR_dB/20)
 			self.max_SNR = pow (10, max_SNR_dB/20)
 
@@ -27,6 +30,7 @@ class SNREstimator ():
 		
 		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1) # single channel audio input
 		self.input_shape=[train_data.shape[1], train_data.shape[2], 1]
+		train_data = self.normalize_to_range (train_data)
 
 		#train_labels = self.dB_to_linear_range(train_labels)
 
@@ -50,7 +54,8 @@ class SNREstimator ():
 			if valid_data.shape[1] != train_data.shape[1] or valid_data.shape[2] != train_data.shape[2]:
 				raise Exception('dimension mismatch between training and validation data')
 			
-			valid_data = valid_data.reshape (valid_data.shape[0], valid_data.shape[1], valid_data.shape[2], 1),
+			valid_data = valid_data.reshape (valid_data.shape[0], valid_data.shape[1], valid_data.shape[2], 1)
+			valid_data = self.normalize_to_range (valid_data)
 			valid_tuple = (valid_data, valid_labels)
 
 			checkpoint_monitor='val_loss'
@@ -181,6 +186,11 @@ class SNREstimator ():
 				metrics=[self.network_params["input"]["metrics"]])
 		
 		return model
+
+	def normalize_to_range(self, data):
+		data = data - data.mean()
+		return data / (data.max() - data.min()) * (self.map_range[1] - self.map_range[0])
+
 
 	def dB_to_linear_range (self, dB_labels):
 		return (pow(10, dB_labels/20) - self.min_SNR) / (self.max_SNR - self.min_SNR)

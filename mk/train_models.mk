@@ -1,5 +1,5 @@
 
-ConvNet2D_A_10000_files:  ${PY}/train_model.py ${PAR}/ConvNet2D_A.json
+ConvNet2D_A_20240319_214050_10000_files:  ${PY}/train_model.py ${PAR}/ConvNet2D_A.json
 	$< \
 	--json_params ${PAR}/ConvNet2D_A.json \
 	--train_data ${PKG}/20240319_214050_10000_files/train_data.npy \

@@ -3,6 +3,7 @@
 		"verbose": 2,
 		"max_SNR_dB": 24,
 		"min_SNR_dB": 0,
+		"map_range": [-1, 1],
 		"loss": "mean_absolute_error",
 		"horovod": 4,
 		"learning_rate": 0.0001,
