@@ -8,7 +8,8 @@ import urllib
 
 
 class WavMetadata(object):
-    """WavMetadata constructs the filename from the list of attributes,
+    """
+    WavMetadata constructs the filename from the list of attributes,
     or parse a filename into the attributes that constructed it.
 
     Args:
@@ -76,10 +77,6 @@ class WavMetadata(object):
         """Get the filename."""
         return self.get_filename()
 
-    def __lt__(self, other):
-        """Make the class sortable by its index."""
-        return int(self.IX) < int(other.IX)
-
     def get_augmentation_params(self):
         """Return the dictionary of params applied in the augmentation of the
         file."""
@@ -94,51 +91,6 @@ class WavMetadata(object):
             "dilate": self.DL,
         }
         return params
-
-    def get_FN_without_subfolder(self):
-        """Unquotes encoded '/' as %2F into FN back to '/'. Splits result into
-        file name & subfolder and returns file name.
-
-        Returns:
-            (str): File name
-        """
-        return urllib.parse.unquote(self.FN).split("/")[-1]
-
-    def get_FN_subfolder(self):
-        """Unquotes encoded '/' as %2F into FN back to '/'. Splits result into
-        file name & subfolder and returns subfolder name.
-
-        Returns:
-            (str): Subfolder name
-        """
-        parts = urllib.parse.unquote(self.FN).split("/")
-        return parts[len(parts) - 2]
-
-    def get_BF_without_subfolder(self):
-        """Unquotes encoded '/' as %2F into BF back to '/'. Splits result into
-        file name & subfolder and returns file name.
-
-        Returns:
-            (str): File name
-        """
-        return urllib.parse.unquote(self.BF).split("/")[-1]
-
-    def get_BF_subfolder(self):
-        """Unquotes encoded '/' as %2F into BF back to '/'. Splits result into
-        file name & subfolder and returns subfolder name.
-
-        Returns:
-            (str): Subfolder name
-        """
-        parts = urllib.parse.unquote(self.BF).split("/")
-        return parts[len(parts) - 2]
-
-    def get_hash(self):
-        """Get the hash of the label and filename.
-        """
-        filename = self.LB + "/" + self.get_FN_without_subfolder() + ".wav"
-        digest = hashlib.sha224(filename.encode("ascii", "strict")).hexdigest()
-        return digest
 
     def get_filename(self):
         """Get the filename.
@@ -174,20 +126,4 @@ class WavMetadata(object):
             + "{:.4f}".format(DL)
             + ".wav"
         )
-
-    def set_BF(self, bf):
-        """Setter for the source filename of the background.
-
-        Args:
-            bf (str): background file name value
-        """
-        self.BF = urllib.parse.quote(bf, safe="")
-
-    def set_FN(self, fn):
-        """Setter for the source filename of the foreground.
-
-        Args:
-            fn (str): Foreground file name value
-        """
-        self.FN = urllib.parse.quote(fn, safe="")
 

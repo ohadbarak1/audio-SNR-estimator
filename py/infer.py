@@ -34,17 +34,32 @@ if __name__ == '__main__':
     print (f"MAE dB loss from inference on test data = {pred_loss}")
     
     delta_pred = pred.flatten()-test_labels.flatten()
+    delta_abs = np.abs(delta_pred)
+    min_delta_pred = 0
+    max_delta_pred = 15
+
+    delta_SNR=np.arange(min_delta_pred, max_delta_pred, float((max_delta_pred-min_delta_pred))/100)
+    ROC = [delta_abs[delta_abs < i].size / delta_abs.size for i in delta_SNR]
+
     plot_file = join (dirname(args.model_path), basename(args.test_data)+"_"+"inference_delta.png")
 
-    fig, ax0 = plt.subplots (1, 1, figsize=(8,6))
+    fig, [ax0, ax1] = plt.subplots (2, 1, figsize=(8,12))
 
-
-    ax0.hist(delta_pred, bins=24, color='skyblue', edgecolor='black')
+    dB_bins = np.arange(-max_delta_pred,max_delta_pred,1)
+    ax0.hist(delta_pred, bins=dB_bins, density=True, color='skyblue', edgecolor='black')
     ax0.grid(True, alpha=0.3)
-    #ax0.set_ylim (ymin=0, ymax=20)
-    ax0.set_ylabel('number of samples', fontsize=10)
-    ax0.set_xlabel ('prediction delta_SNR', fontsize=10)
-    ax0.set_xlim(-15, 15)
+    ax0.set_ylim (ymin=0, ymax=1)
+    ax0.set_ylabel('pct of samples', fontsize=18)
+    ax0.set_xlabel ('prediction delta_SNR', fontsize=18)
+    ax0.set_xlim(-max_delta_pred, max_delta_pred)
+
+    ax1.plot(delta_SNR, ROC)
+    ax1.grid(True, alpha=0.3)
+    ax1.set_ylim (ymin=0, ymax=1.1)
+    ax1.set_ylabel('pct in range', fontsize=18)
+    ax1.set_xlabel ('prediction delta_SNR', fontsize=18)
+
+
     print('saving figures to {}'.format(plot_file))
     plt.savefig(plot_file, dpi=200)
     plt.close()

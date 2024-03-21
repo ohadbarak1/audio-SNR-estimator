@@ -36,18 +36,19 @@ class BackgroundWav:
 
 
 class Wav:
-    """A wrapper for wav files and the operations we want to perform on them,
-    including loading, writing, data augmentation, visualization etc.
+    """
+    A wrapper for wav files and operations to perform on them,
+    including loading, writing, data augmentation
 
     Args:
-        label (string): The true class label of the starting file.
+        label (string): The true class label of the wav file.
         filepath (string): The path to the base file on the filesystem.
         data (Wav Obj): The data that was just produced by augmentation.
         meta (WavMetadata): The metadata for the wav.
         augmentation_samples (int): The number of samples to get from a wav during augmentation.
         sample_rate (int): Expected sample rate of the wavs. Default 16000
-        foreground_data (np.array): The foreground data used for the augmentation in augment_data.
-        background_data (np.array): The background data used for the augmentation in augment_data.
+        foreground_data (np.array): 
+        background_data (np.array): 
     """
 
     def __init__(
@@ -118,14 +119,13 @@ class Wav:
         spectral_shaping_factor=None,
         foreground_volume_norm=True,
     ):
-        """Use numpy to augment the data according to the params that have been
-        sampled or previously generated.
-
+        """
+        Augment the data according to the input parameters
         Use Librosa for dilation, pitch shifting and feature extraction
         
         Args:
             idx (int): The integer identifier to associate with the metadata.
-            background (bool): Should background audio be mixed in?
+            background (bool): Whether to add background audio
             background_label (str): the label of the background data
             background_samples (np.array): The background wav data before applying offset
             background_offset (int): the offset value used on background data
