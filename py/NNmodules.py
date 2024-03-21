@@ -14,11 +14,13 @@ class SNREstimator ():
 		with open(json_path, "r") as f:
 			self.network_params = json.load(f)
 			self.input_shape = None
+
+			self.data_map_range = self.network_params["input"]["data_map_range"]
+			if not isinstance(self.data_map_range, list) or len(self.data_map_range) != 2:
+				raise ValueError ('data_map_range should be a list: [min_range, max_range]')
+			
 			min_SNR_dB = self.network_params["input"]["min_SNR_dB"]
 			max_SNR_dB = self.network_params["input"]["max_SNR_dB"]
-			self.map_range = self.network_params["input"]["map_range"]
-			if not isinstance(self.map_range, list):
-				raise ValueError ('map_range should be a list: [min_range, max_range]')
 			self.min_SNR = pow (10, min_SNR_dB/20)
 			self.max_SNR = pow (10, max_SNR_dB/20)
 
@@ -30,9 +32,9 @@ class SNREstimator ():
 		
 		train_data = train_data.reshape (train_data.shape[0], train_data.shape[1], train_data.shape[2], 1) # single channel audio input
 		self.input_shape=[train_data.shape[1], train_data.shape[2], 1]
-		train_data = self.normalize_to_range (train_data)
 
-		#train_labels = self.dB_to_linear_range(train_labels)
+		train_data = self.normalize_to_range (train_data)
+		train_labels = self.dB_to_linear_range(train_labels)
 
 		# load model if the model file already exists.
 		# otherwise, build a new model
@@ -50,12 +52,12 @@ class SNREstimator ():
 				raise Exception ('validation data array should have 3 dimension: [n_samples, time, feature]')
 			if len(valid_labels.shape) != 1:
 				raise Exception ('validation label data array should have 1 dimension: [n_samples]')
-			
 			if valid_data.shape[1] != train_data.shape[1] or valid_data.shape[2] != train_data.shape[2]:
 				raise Exception('dimension mismatch between training and validation data')
 			
 			valid_data = valid_data.reshape (valid_data.shape[0], valid_data.shape[1], valid_data.shape[2], 1)
 			valid_data = self.normalize_to_range (valid_data)
+			valid_labels = self.dB_to_linear_range(valid_labels)
 			valid_tuple = (valid_data, valid_labels)
 
 			checkpoint_monitor='val_loss'
@@ -64,9 +66,8 @@ class SNREstimator ():
 
 		# add checkpoints for trained model.
 		# Save only the "best" model according to the value of validation data loss, 
-		# or traiing data loss if validation data are not supplied
+		# or training data loss if validation data are not supplied
 		my_callbacks = [
-			#ModelCheckpoint(filepath='%s.epoch={epoch:03d}.val_loss={val_loss:2.4f}.h5'%(checkpoint_path.split('.')[0]),
 			ModelCheckpoint(filepath=checkpoint_path,
 							monitor=checkpoint_monitor,
 							save_best_only=True,
@@ -90,15 +91,20 @@ class SNREstimator ():
 		batch_size	= self.network_params["input"]["batch_size"]
 		verbose		= self.network_params["input"]["verbose"]
 
-		if test_data.shape[1] != self.input_shape[0] or test_data.shape[2] != self.input_shape[1]:
-			raise Exception('dimension mismatch between test and training data')
+		if len(test_data.shape) != 3:
+			raise Exception ('testing data array should have 3 dimension: [n_samples, time, feature]')
+		
+		#if test_data.shape[1] != self.input_shape[0] or test_data.shape[2] != self.input_shape[1]:
+		#	raise Exception('dimension mismatch between test and training data')
+
 		test_data = test_data.reshape (test_data.shape[0], test_data.shape[1], test_data.shape[2], 1)
+		test_data = self.normalize_to_range (test_data)
 		
 		# load model from file
 		model = load_model (checkpoint_path)
 		# run inference on test data using the loaded model
 		pred = model.predict (test_data, batch_size=batch_size, verbose=verbose)
-		#pred = self.linear_range_to_dB(pred)
+		pred = self.linear_range_to_dB(pred)
 		return pred
 	
 	def build_CNN_model (self):
@@ -189,7 +195,7 @@ class SNREstimator ():
 
 	def normalize_to_range(self, data):
 		data = data - data.mean()
-		return data / (data.max() - data.min()) * (self.map_range[1] - self.map_range[0])
+		return data / (data.max() - data.min()) * (self.data_map_range[1] - self.data_map_range[0])
 
 
 	def dB_to_linear_range (self, dB_labels):

@@ -5,7 +5,7 @@
 		"min_SNR_dB": 0,
 		"data_map_range": [-1, 1],
 		"loss": "mean_absolute_error",
-		"learning_rate": 0.0001,
+		"learning_rate": 0.001,
 		"epochs": 40,
 		"batch_size": 128,
 		"adam_beta1": 0.9,
@@ -28,14 +28,14 @@
 				"activation": "relu6" },
 			{ "layer_type": "Dropout", "drop": 0.25 },
 			{ "layer_type": "Flatten", "name": "Flatten_5" },
-			{ "layer_type": "Dense", "name": "Dense_6", "units": 64, "regularizer": "l1", "lambda": 0.001,
+			{ "layer_type": "Dense", "name": "Dense_6", "units": 64, "regularizer": "l1", "lambda": 0.0001,
 				"activation": "relu6" },
 			{ "layer_type": "Dropout", "drop": 0.2 },
-			{ "layer_type": "Dense", "name": "Dense_7", "units": 128, "regularizer": "l1", "lambda": 0.001,
+			{ "layer_type": "Dense", "name": "Dense_7", "units": 128, "regularizer": "l1", "lambda": 0.0001,
 				"activation": "relu6" },
 			{ "layer_type": "Dropout", "drop": 0.2 },
 			{ "layer_type": "Dense", "name": "Dense_8", "units": 1,
-				"activation": "linear" }
+				"activation": "sigmoid" }
 		]
 		}
 	}
