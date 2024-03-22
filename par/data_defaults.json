@@ -12,7 +12,8 @@
                 { "directory_name": "park", "percent": 100 },
                 { "directory_name": "square", "percent": 100 },
                 { "directory_name": "mall", "percent": 100 },
-                { "directory_name": "street", "percent": 100 }
+                { "directory_name": "street", "percent": 100 },
+                { "directory_name": "traffic", "percent": 100 }
             ]
         },
         "train_pct": 80,

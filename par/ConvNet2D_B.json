@@ -35,7 +35,7 @@
 				"activation": "relu6" },
 			{ "layer_type": "Dropout", "drop": 0.2 },
 			{ "layer_type": "Dense", "name": "Dense_8", "units": 1,
-				"activation": "linear" }
+				"activation": "sigmoid" }
 		]
 		}
 	}

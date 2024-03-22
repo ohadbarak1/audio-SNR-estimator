@@ -41,7 +41,13 @@ def build_packages (
     foreground_volume_norm=True,
     snr_distribution="uniform",
     snr_min=0,
-    snr_max=24):
+    snr_max=24,
+    pitch_shift_distribution="uniform",
+    pitch_shift_min=-1.0,
+    pitch_shift_max=1.0,
+    dilate_distribution="uniform",
+    dilate_min=0.9,
+    dilate_max=1.1):
 
     os.remove(data_file) if os.path.exists(data_file) else None
     os.remove(label_file) if os.path.exists(label_file) else None
@@ -68,7 +74,13 @@ def build_packages (
                 foreground_volume_norm=foreground_volume_norm,
                 snr_distribution=snr_distribution,
                 snr_min=snr_min,
-                snr_max=snr_max
+                snr_max=snr_max,
+                pitch_shift_distribution=pitch_shift_distribution,
+                pitch_shift_min=pitch_shift_min,
+                pitch_shift_max=pitch_shift_max,
+                dilate_distribution=dilate_distribution,
+                dilate_min=dilate_min,
+                dilate_max=dilate_max
             )
 
             featureObj = FeatureExtract (aug_wav.label,
@@ -105,11 +117,10 @@ def build_packages (
 
 
 def data_packager(json_path):
-    #seed = 24601
+
     seed = 121212
     np.random.seed(seed)
     date_string = f'{datetime.now():%Y%m%d_%H%M%S}'
-    #hashlib.shake_128(date_string.encode("ascii")).hexdigest(8)
 
     with open(json_path, "r") as f:
         augment_params = json.load(f)
@@ -188,7 +199,7 @@ def data_packager(json_path):
         "data_file": None,
         "label_file": None,
         "augmented_dir": augmented_dir,
-        "write_augmented": False,
+        "write_augmented": True,
         "feature_name": fbank["feature_name"],
         "nfft": fbank["nfft"],
         "win_length": fbank["win_length"],
@@ -202,7 +213,13 @@ def data_packager(json_path):
         "foreground_volume_norm": augs["foreground_volume_norm"],
         "snr_distribution": augs["snr_distribution"],
         "snr_min": augs["snr_min"],
-        "snr_max": augs["snr_max"]
+        "snr_max": augs["snr_max"],
+        "pitch_shift_distribution": augs["pitch_shift_distribution"],
+        "pitch_shift_min": augs["pitch_shift_min"],
+        "pitch_shift_max": augs["pitch_shift_max"],
+        "dilate_distribution": augs["dilate_distribution"],
+        "dilate_min": augs["dilate_min"],
+        "dilate_max": augs["dilate_max"]
     }
 
     for i in range(len(fgs)):
