@@ -62,8 +62,7 @@ class Wav:
         foreground_data=None,
         background_data=None,
     ):
-        """Initialize this instance and initialize the static class members if
-        this is the first instance of Wav to be created."""
+
         self.label = label
         self.filepath = filepath
         self.filename = os.path.basename(self.filepath)
@@ -80,7 +79,8 @@ class Wav:
         self.background_data = background_data
 
     def get_wav_data(self):
-        """Get the wav file samples without the header.
+        """
+        Get the wav file samples without the header.
 
         Returns:
             wav_data (numpy.array) The wav data
@@ -88,7 +88,8 @@ class Wav:
         return self.wav_data
 
     def save_wav_file(self, file_path=None, sample_rate=-1, wav_data=None):
-        """Saves audio sample data to a .wav audio file.
+        """
+        Saves audio sample data to a .wav audio file.
 
         Args:
             filename (string): Path to save the file to.
