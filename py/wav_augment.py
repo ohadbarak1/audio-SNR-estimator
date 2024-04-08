@@ -152,7 +152,7 @@ class Wav:
         if pitch_shift:
             foreground = la.effects.pitch_shift (foreground, sr=sample_rate, n_steps=pitch_shift)
 
-        if len(foreground > augmentation_length):
+        if len(foreground) > augmentation_length:
             foreground_offset = np.random.randint(0, len(foreground) - self.augmentation_samples + 1)
             foreground = foreground[foreground_offset : (foreground_offset + augmentation_length)]
         else:
