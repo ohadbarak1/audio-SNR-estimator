@@ -27,8 +27,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/ohadbarak1/audio-SNR-estimator">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0/">
+    <img src="images/logo.jpg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Estimation of SNR in speech audio</h3>
@@ -55,23 +55,11 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
     </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
+    <li><a href="#installation">Installation</a></li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -80,9 +68,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `audio-SNR-estimator`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -97,21 +83,21 @@ To get a local copy up and running follow these simple example steps.
 ### Installation
 1. install Python 3.8 for your platform
 2. Build a Python environment
-  ```python
-  -m venv myvenv
+  ```
+  python -m venv myvenv
   ```
 3. activate the environment
   ``` source myenv/bin/activate
 4. Clone the repo
-   ```sh
+   ```
    git clone https://github.com/ohadbarak1/audio-SNR-estimator.git
    ```
 5. Install required pip packages
-   ```pip
-   install -r requirements.txt
+   ```
+   pip install -r requirements.txt
    ```
 6. Change git remote url to avoid accidental pushes to base project
-   ```sh
+   ```
    git remote set-url origin ohadbarak1/audio-SNR-estimator
    git remote -v # confirm the changes
    ```
@@ -145,25 +131,14 @@ Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.
 
 Ohad Barak - ohadbarak@gmail.com
 
-Project Link: [https://github.com/ohadbarak1/audio-SNR-estimator](https://github.com/ohadbarak1/audio-SNR-estimator)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
+Project Link: [https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0](https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [license-shield]: https://img.shields.io/github/license/ohadbarak1/audio-SNR-estimator.svg?style=for-the-badge
-[license-url]: https://github.com/ohadbarak1/audio-SNR-estimator/blob/master/LICENSE.txt
+[license-url]: https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/ohadbarak
 
