@@ -87,20 +87,22 @@ To get a local copy up and running follow these simple example steps.
   python -m venv myvenv
   ```
 3. activate the environment
-  ``` source myenv/bin/activate
+  ```
+  source myenv/bin/activate
+  ```
 4. Clone the repo
-   ```
-   git clone https://github.com/ohadbarak1/audio-SNR-estimator.git
-   ```
+  ```
+  git clone https://github.com/ohadbarak1/audio-SNR-estimator.git
+  ```
 5. Install required pip packages
-   ```
-   pip install -r requirements.txt
-   ```
+  ```
+  pip install -r requirements.txt
+  ```
 6. Change git remote url to avoid accidental pushes to base project
-   ```
-   git remote set-url origin ohadbarak1/audio-SNR-estimator
-   git remote -v # confirm the changes
-   ```
+  ```
+  git remote set-url origin ohadbarak1/audio-SNR-estimator
+  git remote -v # confirm the changes
+  ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
