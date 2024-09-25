@@ -7,6 +7,9 @@ from datetime import datetime
 import hashlib
 import matplotlib.pyplot as plt
 
+def mae (x, y):
+    return np.mean (np.abs(x-y))
+
 def train_model (
         json_path,
         train_data_path,
@@ -23,11 +26,21 @@ def train_model (
 
     SNR_trainer = SNREstimator(json_path=json_path)
     metrics_out = SNR_trainer.train_model(model_path,
-                                      train_data=train_data, train_labels=train_labels,
-                                      valid_data=valid_data, valid_labels=valid_labels)
-
+                                          train_data=train_data, train_labels=train_labels,
+                                          valid_data=valid_data, valid_labels=valid_labels)
     return metrics_out
 
+def infer_model (
+        json_path,
+        test_data_path,
+        model_path
+    ):
+
+    test_data = np.load(test_data_path)
+    SNR_trainer = SNREstimator(json_path=json_path)
+    pred = SNR_trainer.infer(model_path, test_data)
+
+    return pred
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -55,6 +68,12 @@ if __name__ == '__main__':
         model_path
     )
 
+    valid_labels = np.load(args.valid_labels)
+    pred = infer_model(args.json_params, args.valid_data, model_path)
+    
+    valid_pred_loss = mae (valid_labels, pred)
+    print (f"MAE loss from inference on validation data = {valid_pred_loss}")
+    
     for metric in metrics.history.keys():
         print (f"{metric}: {metrics.history[metric]}")
     

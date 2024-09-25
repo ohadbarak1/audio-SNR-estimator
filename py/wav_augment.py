@@ -36,18 +36,19 @@ class BackgroundWav:
 
 
 class Wav:
-    """A wrapper for wav files and the operations we want to perform on them,
-    including loading, writing, data augmentation, visualization etc.
+    """
+    A wrapper for wav files and operations to perform on them,
+    including loading, writing, data augmentation
 
     Args:
-        label (string): The true class label of the starting file.
+        label (string): The true class label of the wav file.
         filepath (string): The path to the base file on the filesystem.
         data (Wav Obj): The data that was just produced by augmentation.
         meta (WavMetadata): The metadata for the wav.
         augmentation_samples (int): The number of samples to get from a wav during augmentation.
         sample_rate (int): Expected sample rate of the wavs. Default 16000
-        foreground_data (np.array): The foreground data used for the augmentation in augment_data.
-        background_data (np.array): The background data used for the augmentation in augment_data.
+        foreground_data (np.array): 
+        background_data (np.array): 
     """
 
     def __init__(
@@ -61,8 +62,7 @@ class Wav:
         foreground_data=None,
         background_data=None,
     ):
-        """Initialize this instance and initialize the static class members if
-        this is the first instance of Wav to be created."""
+
         self.label = label
         self.filepath = filepath
         self.filename = os.path.basename(self.filepath)
@@ -79,7 +79,8 @@ class Wav:
         self.background_data = background_data
 
     def get_wav_data(self):
-        """Get the wav file samples without the header.
+        """
+        Get the wav file samples without the header.
 
         Returns:
             wav_data (numpy.array) The wav data
@@ -87,7 +88,8 @@ class Wav:
         return self.wav_data
 
     def save_wav_file(self, file_path=None, sample_rate=-1, wav_data=None):
-        """Saves audio sample data to a .wav audio file.
+        """
+        Saves audio sample data to a .wav audio file.
 
         Args:
             filename (string): Path to save the file to.
@@ -118,14 +120,13 @@ class Wav:
         spectral_shaping_factor=None,
         foreground_volume_norm=True,
     ):
-        """Use numpy to augment the data according to the params that have been
-        sampled or previously generated.
-
+        """
+        Augment the data according to the input parameters
         Use Librosa for dilation, pitch shifting and feature extraction
         
         Args:
             idx (int): The integer identifier to associate with the metadata.
-            background (bool): Should background audio be mixed in?
+            background (bool): Whether to add background audio
             background_label (str): the label of the background data
             background_samples (np.array): The background wav data before applying offset
             background_offset (int): the offset value used on background data
@@ -151,7 +152,7 @@ class Wav:
         if pitch_shift:
             foreground = la.effects.pitch_shift (foreground, sr=sample_rate, n_steps=pitch_shift)
 
-        if len(foreground > augmentation_length):
+        if len(foreground) > augmentation_length:
             foreground_offset = np.random.randint(0, len(foreground) - self.augmentation_samples + 1)
             foreground = foreground[foreground_offset : (foreground_offset + augmentation_length)]
         else:

@@ -170,7 +170,7 @@ class FeatureExtract:
         assert file_path is not None
         plt = self.get_matplot_waveform()
         plt.savefig(file_path)
-        # plt.show()  # Uncomment to plot out on screen
+        # plt.show()  # Uncomment to plot to screen
         plt.close()
 
     def get_matplot_spectrogram(self, nfft=512):
@@ -199,5 +199,5 @@ class FeatureExtract:
             bbox_inches="tight",
             pad_inches=0,
         )
-        # plt.show()  # Uncomment to plot out immediately
+        # plt.show()  # Uncomment to plot to screen
         plt.close()

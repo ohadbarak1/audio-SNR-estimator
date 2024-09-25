@@ -21,7 +21,7 @@
         "test_pct": 5,
         "augmented_directory": "/home/ohad/DG/data/augmented",
         "package_directory": "/home/ohad/DG/data/packages",
-        "augmentation_number": 10000,
+        "augmentation_number": 100000,
         "backgrounds_per_foreground": 10,
         "augmentation_length": 16000,
         "augmentation_defaults": {   
