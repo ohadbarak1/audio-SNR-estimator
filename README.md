@@ -19,7 +19,7 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![GNU GPLv3 License][license-shield]][license-url]
+[![GNU GPLv3 License]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
@@ -78,13 +78,18 @@ In essence, this project is trying to provide an estimation of SNR for a very si
 
 The speech data are taken from LibriSpeech: [https://www.openslr.org/12/].
 The environmental noises are from the TAU Urban Acoustic Scenes 2022 development dataset: [https://zenodo.org/records/6337421
-]
+].
 Most of these noises are stochastic, with some transient events such as car horns in the traffic data.
 
 The project provides two workflows: 
-1. Building of a noise augmented dataset where the speech data and noise data are summed with a known SNR. This SNR is saved as the label for the resulting audio frames.
-2. Training and testing of a CNN that reads the augmented audio and utilizes the SNR labels generated in the previous step to build a model that predicts SNR on given audio clips.
+1. Building of a noise-augmented dataset where the speech data and noise data are summed with a random, known SNR, and split into training, validation and testing sets. The SNR is saved as the label for the resulting audio frames in each set. Other standard audio augmentations are applied as well (pitch shift, time dilation, time shift, spectral shaping).
+2. Training and testing of a CNN that reads the augmented audio and utilizes the SNR labels generated in the previous step to build a model that predicts SNR on given audio clips. The current model I implemented is a regression model, but one may envision a classification model where the SNR is binned into ranges.
 
+This image shows three spectrograms of the word 'six' being spoken using different augmentations with varying SNRs:
+ [![SNR augmentation example][SNR-augmentation-example]]
+
+
+ I used Keras for the ML model development, and Librosa for feature generation.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -126,14 +131,16 @@ To get a local copy up and running follow these simple example steps.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+The main Makefile defines the working directories.
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+1) mk/build_packages.mk has targets for several example workflows for generating augmented data packages and labels. Data packages are saved as numpy files.
+2) mk/train_models.mk has targets for example model training workflows.
+3) The par directory contains json files for package building and model training workflows.
+4) Take a look at par/data_defaults.json, which defines source directories for the foreground speech data and the background noise data, and the output directories for the augmented data files. Adapt these to your dir structure. Parameters for the desired augmentation and filterbank construction are also in this file.
+5) Take a look at par/ConvNet2D_A.json, which defines a network architecture and hyperparameters. The way I implemented it, the only requirement is that the final layer contain a single neuron (the normalized SNR value).
+6) There's support only for Conv, MaxPool, AvgPool, Dropout, Flatten and Dense Keras layers.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- LICENSE -->
 ## License
@@ -141,8 +148,6 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTACT -->
 ## Contact
@@ -155,9 +160,10 @@ Project Link: [https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[license-shield]: https://img.shields.io/github/license/ohadbarak1/audio-SNR-estimator.svg?style=for-the-badge
 [license-url]: https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/ohadbarak
+[SNR-augmentation-example]: images/audio-SNR-augmentation-example.jpg
+
 
 
