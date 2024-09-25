@@ -28,7 +28,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0/">
-    <img src="images/logo.jpg" alt="Logo" width="80" height="80">
+    <img src="images/logo.jpg" alt="Logo" width="160" height="160">
   </a>
 
 <h3 align="center">Estimation of SNR in speech audio</h3>
@@ -36,11 +36,9 @@
   <p align="center">
     project_description
     <br />
-    <a href="https://github.com/ohadbarak1/audio-SNR-estimator"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/ohadbarak1/audio-SNR-estimator/blob/normalize_data_v1.0/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/ohadbarak1/audio-SNR-estimator">View Demo</a>
-    ·
     <a href="https://github.com/ohadbarak1/audio-SNR-estimator/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
     <a href="https://github.com/ohadbarak1/audio-SNR-estimator/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
@@ -67,7 +65,25 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+Multiple Automatic Speech Recognitioni (ASR) systems exist. Their ability to transcribe speech depends on multiple factors.
+In this project, I attempt to address one of those factors: Signal-to-Noise Ratio (SNR).
+Principally speaking, the lower the SNR of a speech audio signal, the less likely a given SNR would transcribe it correctly.
+This is of course dependent on the type of noise, and the training applied to the ASR to handle that particular type of noise.
 
+As ASR systems are being developed and optimized for edge devices, a question arises: should a given audio signal be transcribed by an ASR running locally on a given edge device, or should the audio be sent to processing in the cloud? 
+An ASR model on the cloud is likely to be larger, and better equiped to transcribe audio with low levels of SNR.
+However, this would come at a cost of higher latency. For some applications, latency could be a more important factor than accuracy, and for others the situation could be reversed. 
+
+In essence, this project is trying to provide an estimation of SNR for a very simplified case of clean speech signal with additive environmental noise. The idea being that a low-complexity / low-power model like this could be run on an input audio stream on an edge device and provide the SNR. This SNR estimation can be used by an ASR system to determine whether to run a local ASR model (if the SNR is high), or to pass the audio to an instance of the ASR running on the cloud (if the SNR is low).
+
+The speech data are taken from LibriSpeech: [https://www.openslr.org/12/].
+The environmental noises are from the TAU Urban Acoustic Scenes 2022 development dataset: [https://zenodo.org/records/6337421
+]
+Most of these noises are stochastic, with some transient events such as car horns in the traffic data.
+
+The project provides two workflows: 
+1. Building of a noise augmented dataset where the speech data and noise data are summed with a known SNR. This SNR is saved as the label for the resulting audio frames.
+2. Training and testing of a CNN that reads the augmented audio and utilizes the SNR labels generated in the previous step to build a model that predicts SNR on given audio clips.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
