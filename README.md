@@ -67,7 +67,7 @@
 ## About The Project
 Multiple Automatic Speech Recognitioni (ASR) systems exist. Their ability to transcribe speech depends on multiple factors.
 In this project, I attempt to address one of those factors: Signal-to-Noise Ratio (SNR).
-Principally speaking, the lower the SNR of a speech audio signal, the less likely a given SNR would transcribe it correctly.
+Principally speaking, the lower the SNR of a speech audio signal, the less likely a given ASR would transcribe it correctly.
 This is of course dependent on the type of noise, and the training applied to the ASR to handle that particular type of noise.
 
 As ASR systems are being developed and optimized for edge devices, a question arises: should a given audio signal be transcribed by an ASR running locally on a given edge device, or should the audio be sent to processing in the cloud? 
